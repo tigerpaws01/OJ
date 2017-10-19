@@ -10,28 +10,39 @@ unsigned long lengthOf(Node *head)
 
 Node* copy(Node *src)
 {
-	// Build a linked list of the same size with src
+	// Set ID for src
+	Node *srcIDSet = src;
+	unsigned long srcID = 0;
+	while(srcIDSet != NULL)
+	{
+		srcIDSet->id = srcID++;
+		srcIDSet = srcIDSet->next;
+	}
 	unsigned long l = lengthOf(src);
-	Node *head=(Node*)malloc(sizeof(Node));
-	Node *temp=head;
+	// Build a linked list of the same size with src
+	
+	unsigned long length = l;
 	Node *halfway[D];
 	unsigned long i, halfwayID[D];
 	
-	for(i=0;i<l;)
+	Node *head=malloc(sizeof(Node));
+	Node *temp=head;
+	for(unsigned long i=0;l--;)
 	{
-		temp->next=(Node*)malloc(sizeof(Node));
+		
+		temp->next=malloc(sizeof(Node));
 		temp=temp->next;
-		int k = 1;
-		for(;k<D;k++) if(i <= k*(l-1)/D) {halfway[k] = temp; halfwayID[k] = i;}
-		temp->id=i++;
+		int indicator;
+		for(indicator = 0; indicator<D; indicator++) if(i <= (indicator*length/D)) halfway[indicator] = temp, halfwayID[indicator] = i;
+		temp->id = i++;
 		temp->fri=NULL;
 		
-		//if(i == l/2) halfway = temp, halfwayID = i;
 	}
 	temp->next=NULL;
 	temp=head->next;
 	free(head);
 	head=temp;
+
 	halfway[0] = head;
 	halfwayID[0] = head->id;
 
@@ -41,16 +52,13 @@ Node* copy(Node *src)
 		if(srcCur->fri == NULL) {
 			resultCur->fri = NULL; continue;
 		}
-		//Node * setMeUrFriend = (srcCur->fri->id >= halfwayID ? halfway : head);
 		Node * setMeUrFriend;
 		int k;
 		for(k = 0;k<D && srcCur->fri->id >= halfwayID[k] ;k++)
 		{
 			setMeUrFriend = halfway[k];
 		}
-		//unsigned long i = 0;
 		for(;setMeUrFriend->id != srcCur->fri->id;setMeUrFriend = setMeUrFriend->next);
-		//for(;i - srcCur->fri->id;setMeUrFriend = setMeUrFriend->next, i++);
 		resultCur->fri = setMeUrFriend;
 	}
 	return head;
