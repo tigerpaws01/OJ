@@ -1,82 +1,70 @@
-#include <cstdio>
+#include <stdio.h>
+#include <stdlib.h>
 #include <iostream>
 using namespace std;
 
-int pos;
-char str[100000];
+char str[1000];
 bool input[26];
+int pos;
 
-void getResult(int,int);
+void Process(int num, int total);
 bool calculate();
 
-// recursively determine the sequence of input
-void getResult(int vars, int total)
+void Process(int num, int total)
 {
-	if(vars < total)
+	if(num < total)
 	{
-		input[vars] = false;
-		getResult(vars+1, total);
+		input[num] = false;
+		Process(num+1, total);
 		
-		input[vars] = true;
-		getResult(vars+1, total);
+		input[num] = true;
+		Process(num+1, total);
 	}
 	else
 	{
 		pos = 0;
-		bool r = calculate();
-		/*printf("Sequence: ");
-		for(int i = 0; i<total; i++)
-		{
-			printf("%d ", input[i] ? 1 : 0);
-		}
-		printf("Result: %d\n", r ? 1 : 0);*/
-		if(r)
+		if(calculate())
 		{
 			for(int i = 0; i<total; i++)
-			{
-				printf("%d ", input[i] ? 1 : 0);
-			}
-			printf("\n");
+				cout << (input[i] ? 1 : 0) << " ";
+			cout << "\n";
 		}
 	}
-	
 }
 
 bool calculate()
 {
 	bool l, r;
-	if(str[pos] == '&')
+	switch(str[pos])
 	{
-		pos++;
-		l = calculate();
-		r = calculate();
-		return l && r;
-	}
-	else if(str[pos] == '|')
-	{
-		pos++;
-		l = calculate();
-		r = calculate();
-		return l || r;
-	}
-	else if(str[pos] == '^')
-	{
-		pos++;
-		l = calculate();
-		r = calculate();
-		return l != r;
-	}
-	else
-	{
-		return input[ str[pos++]-'A' ];
+		case '&':
+			pos++;
+			l = calculate(),
+			r = calculate();
+			return l && r;
+			break;
+		case '|':
+			pos++;
+			l = calculate(),
+			r = calculate();
+			return l || r;
+			break;
+		case '^':
+			pos++;
+			l = calculate(),
+			r = calculate();
+			return l != r;
+			break;
+		default:
+			return input[ str[pos++]-'A' ];
 	}
 }
 
 int main()
 {
-	int a, b;
-	scanf("%d%d", &a, &b);
-	scanf("%s", str);
-	getResult(0, a);
-	return 0;
+	int num, length;
+	
+	cin >> num >> length;
+	cin >> str;
+	Process(0, num);
 }
