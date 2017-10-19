@@ -2,64 +2,52 @@
 #include "function.h"
 #define D 20
 
-unsigned long lengthOf(Node *head)
+unsigned long lengthOf(Node *src)
 {
-	for(;head->next != NULL;head = head->next);
-	return head->id+1;
+	while(src->next != NULL) src = src->next;
+	return src->id + 1;
 }
 
 Node* copy(Node *src)
 {
-	// Set ID for src
-	Node *srcIDSet = src;
-	unsigned long srcID = 0;
-	while(srcIDSet != NULL)
-	{
-		srcIDSet->id = srcID++;
-		srcIDSet = srcIDSet->next;
-	}
-	unsigned long l = lengthOf(src);
-	// Build a linked list of the same size with src
+	Node *srcCur = src, *headCur, *head, *temp, *halfway[D];
+	unsigned long halfwayID[D];
 	
-	unsigned long length = l;
-	Node *halfway[D];
-	unsigned long i, halfwayID[D];
-	
-	Node *head=malloc(sizeof(Node));
-	Node *temp=head;
-	for(unsigned long i=0;l--;)
-	{
+	unsigned long i = 0;
+	// Set ID of src
+	for(;srcCur != NULL;srcCur = srcCur->next)
+		srcCur->id = i++;
 		
-		temp->next=malloc(sizeof(Node));
+	// Build a list just like src
+	unsigned long l = lengthOf(src), length;
+	length = l;
+	
+	head=(Node*)malloc(sizeof(Node));
+	temp=head;
+	for(i=0;l--;)
+	{
+		temp->next=(Node*)malloc(sizeof(Node));
 		temp=temp->next;
-		int indicator;
-		for(indicator = 0; indicator<D; indicator++) if(i <= (indicator*length/D)) halfway[indicator] = temp, halfwayID[indicator] = i;
+		int k;
+		for(k=0; k<D; k++) if(i <=(k*length/D)) halfway[k] = temp, halfwayID[k] = i;
 		temp->id = i++;
 		temp->fri=NULL;
-		
 	}
 	temp->next=NULL;
 	temp=head->next;
 	free(head);
 	head=temp;
 
-	halfway[0] = head;
-	halfwayID[0] = head->id;
-
-	Node *srcCur = src, *resultCur = head;
-	for(;srcCur != NULL; srcCur = srcCur->next, resultCur = resultCur->next)
+	// Simulate friend
+	srcCur = src, headCur = head;
+	for(;srcCur != NULL && headCur != NULL; srcCur = srcCur->next, headCur = headCur->next)
 	{
-		if(srcCur->fri == NULL) {
-			resultCur->fri = NULL; continue;
-		}
-		Node * setMeUrFriend;
+		if(srcCur->fri == NULL) continue;
+		Node *setMeFri;
 		int k;
-		for(k = 0;k<D && srcCur->fri->id >= halfwayID[k] ;k++)
-		{
-			setMeUrFriend = halfway[k];
-		}
-		for(;setMeUrFriend->id != srcCur->fri->id;setMeUrFriend = setMeUrFriend->next);
-		resultCur->fri = setMeUrFriend;
+		for(k=0; k<D && srcCur->fri->id >= halfwayID[k]; k++)  setMeFri = halfway[k];
+		for(;setMeFri->id != srcCur->fri->id;setMeFri = setMeFri->next);
+		headCur->fri = setMeFri;
 	}
 	return head;
 }
