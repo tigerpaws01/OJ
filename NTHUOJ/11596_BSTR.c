@@ -1,159 +1,145 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "function.h"
+#include <iostream>
 
 // You need to implement these functions
+Node* new_node(int key);
+void insert(Node **root, int key);
+void deleteNode(Node **root, int key);
+int numOf(Node **root, int key);
+void actualDeletion(Node **root, int key);
+int deleteSmallest(Node **root);
+int deleteGreatest(Node **root);
+
+Node* new_node(int key)
+{
+    Node* node = (Node*)malloc(sizeof(Node));
+    node->data = key;
+    node->left = node->right = NULL;
+
+    return node;
+}
+
 void insert(Node **root, int key)
 {
 	if(*root == NULL)
 	{
-		*root = (Node*)malloc(sizeof(Node));
-		(*root)->data = key;
-		(*root)->left = NULL;
-		(*root)->right = NULL;
+		*root = new_node(key);
 		return;
 	}
-	Node *cur = *root;
-	while(1)
-	{
-		if(key <= cur->data && cur->left == NULL)
-		{
-			cur->left = (Node*)malloc(sizeof(Node));
-			cur->left->data = key;
-			cur->left->left = NULL;
-			cur->left->right = NULL;
-			break;
-		}
-		else if(key > cur->data && cur->right == NULL)
-		{
-			cur->right = (Node*)malloc(sizeof(Node));
-			cur->right->data = key;
-			cur->right->left = NULL;
-			cur->right->right = NULL;
-			
-			break;
-		}
-		else if(key <= cur->data)
-			cur = cur->left;
-		else if(key > cur->data)
-			cur = cur->right;
-	}
+	Node *last = *root, *cur = *root;
+	for(;cur != NULL;
+		last = cur, cur = (cur->data > key ? cur->left : cur->right));
+
+	if(last->data > key) last->left = new_node(key);
+	else last->right = new_node(key);
+
 }
 
-int deleteSmallest(Node *root)
+int numOf(Node **root, int key)
 {
-	Node * cur, *last = root;
-	last = root;
-	cur = root->right;
+	if(*root == NULL) return 0;
+	return numOf(&((*root)->left), key) + ((*root)->data == key ? 1 : 0) + numOf(&((*root)->right), key);
+}
+
+// make sure root has a right subtree
+int deleteSmallest(Node **root)
+{
+	Node *last, *cur;
+	if((*root)->right == NULL) return 0;
+	last = *root, cur = (*root)->right;
+	
 	if(cur->left == NULL)
 	{
 		last->right = cur->right;
-		int result = cur->data;
+		int toRt = cur->data;
 		free(cur);
-		return result;
+		return toRt;
 	}
 	else
 	{
-		for(;cur->left != NULL;)
-		{
-			last = cur;
-			cur = cur->left;
-		}
+		for(;cur->left != NULL;last = cur, cur = cur->left);
 		last->left = cur->right;
-		int result = cur->data;
+		int toRt = cur->data;
 		free(cur);
-		return result;
+		return toRt;
 	}
 	
 	
 }
 
-int deleteGreatest(Node *root)
+int deleteGreatest(Node **root)
 {
-	Node * cur, *last = root;
-	cur = root->left;
+	Node *last, *cur;
+	if((*root)->left == NULL) return 0;
+	last = *root, cur = (*root)->left;
+
 	if(cur->right == NULL)
 	{
 		last->left = cur->left;
-		int result = cur->data;
+		int toRt = cur->data;
 		free(cur);
-		return result;
+		return toRt;
 	}
-	else{
-	 for(;cur->right != NULL;)
-		{
-			last = cur;
-			cur = cur->right;
-		}
+	else
+	{
+		for(;cur->right != NULL;last = cur, cur = cur->right);
 		last->right = cur->left;
-		int result = cur->data;
+		int toRt = cur->data;
 		free(cur);
-		return result;
+		return toRt;
 	}
-	
-}
-
-int numOf(Node *root, int key)
-{
-	if(root == NULL) return 0;
-	return numOf(root->left, key) + (root->data == key ? 1 : 0) +numOf(root->right, key);
 }
 
 void actualDeletion(Node **root, int key)
 {
+	// No nodes
 	if(*root == NULL) return;
-	if((*root)->left == NULL && (*root)->right == NULL)
+	Node *last, *cur = *root;
+	
+	// Only the root
+	if(cur->left == NULL && cur->right == NULL)
 	{
-		if((*root)->data == key) {
-			Node *toD = *root;
-			*root = NULL;
-			free(toD);
-			return;
-		}
-		else return;
-
-	}
-	// if it is the root to be deleted
-	if((*root)->data == key)
-	{
-		(*root)->data = ((*root)->right != NULL ? deleteSmallest(*root) : deleteGreatest(*root));
+		if(cur->data == key) free(*root), *root = NULL;
 		return;
 	}
-	// else
-	Node * last = *root,
-	*cur = (*root)->data > key ? (*root)->left : (*root)->right;
+	
+	// Delete the root
+	if(cur->data == key)
+	{
+		cur->data = (cur->left != NULL ? deleteGreatest(root) : deleteSmallest(root));
+		return;
+	}
+	
+	// Other situations
+	last = *root,
+	cur = (key > (*root)->data ? (*root)->right : (*root)->left);
 	for(;cur != NULL && cur->data != key;
-		last = cur, cur = cur->data > key ? cur->left : cur->right)
-		{
-			//printf("NOW ON:%d\n", cur->data);
-			//system("pause");
-		}
+		last = cur, cur = key > cur->data ? cur->right : cur->left);
+		
 	if(cur == NULL) return;
-	//printf("KEY:%d\n", key);
+	
 	if(cur->left == NULL && cur->right == NULL)
 	{
 		if(last->left == cur) last->left = NULL;
 		else last->right = NULL;
 		free(cur);
-		return;
 	}
 	else if(cur->left == NULL || cur->right == NULL)
 	{
-		if(last->left == cur) last->left = (cur->left == NULL ? cur->right : cur->left);
-		else last->right = (cur->left == NULL ? cur->right : cur->left);
+		if(last->left == cur) last->left = (cur->left != NULL ? cur->left : cur->right);
+		else last->right = (cur->left != NULL ? cur->left : cur->right);
 		free(cur);
-		return;
 	}
 	else
 	{
-		cur->data = deleteGreatest(cur);
-		return;
+		cur->data = deleteGreatest(&cur);
 	}
 }
 
 void deleteNode(Node **root, int key)
 {
-	int k = numOf(*root, key);
-	while(k--) actualDeletion(root, key);
-	
+	int N = numOf(root, key);
+	while(N--) actualDeletion(root, key);
 }
