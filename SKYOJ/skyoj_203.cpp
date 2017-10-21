@@ -13,28 +13,32 @@ struct Gear{
 bool connected(Gear *a, Gear *b)
 {
 	if(a == b) return false;
-	return	(a->x - b->x) * (a->x - b->x) +
-					(a->y - b->y) * (a->y - b->y) ==
-					(a->r + b->r) * (a->r + b->r);
+	long long int ax = a->x, ay = a->y, ar = a->r, bx = b->x, by = b->y, br = b->r;
+	return	(ax - bx) * (ax - bx) +
+		(ay - by) * (ay - by) ==
+		(ar + br) * (ar + br);
 }
 
 Gear g[1005];
 vector<int> cnt[1005];
 bool visit[1005];
-double constantR;
 
+double Abs(double d)
+{
+	return d < 0 ? -d : d;
+}
 
 bool dfs(int n, double targetR)
 {
 	//printf("  For %d whose rt= %.2f, set it %.2f\n", n, g[n].rt, targetR);
-	if(visit[n]) return (g[n].rt == targetR); // true means good
+	if(visit[n]) return (Abs(g[n].rt - targetR) < 0.01f); // true means good
 	
 	visit[n] = true;
 	g[n].rt = targetR;
 	bool result = true;
 	for(vector<int>::iterator it = cnt[n].begin(); it != cnt[n].end(); it++)
 	{
-		double tr = (targetR < 0 ? 1 : -1) * constantR / g[*it].r;
+		double tr = -g[n].rt * g[n].r / g[*it].r;//(targetR < 0 ? 1 : -1) * constantR / g[*it].r;
 		//printf("    tr=%.2f\n", tr);
 		result = result && dfs(*it, tr);
 	}
@@ -71,7 +75,6 @@ int main()
 		scanf("%d%d", &P, &Q);
 		// process
 		g[P-1].rt = 1.0 * Q;
-		constantR = 1.0 * Q * g[P-1].r;
 		//----------------------------
 		// check for connections
 		for(int i = 0; i<N; i++)
