@@ -34,7 +34,7 @@ void Delete(Node **pos, Node **head)
 	// Detach
 	if(cur->prev != NULL) cur->prev->next = cur->next;
 	cur->next->prev = cur->prev;
-	// Move Head
+	// Modify head pointer when needed
 	if(*pos == *head) *head = cur->next;
 	// Move cursor
 	*pos = cur->next;
@@ -74,7 +74,8 @@ void Free(Node *head)
 }
 
 int main(){
-	// Create a tail node
+	// Creating a tail node ensures simpler operations when inserting and deleting.
+	// Cursor is in FRONT of the node it points to.
 	Node *head = NewNode('\n'), *cursor = head;
 	char c;
 	while(~scanf(" %c", &c))
